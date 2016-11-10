@@ -2,17 +2,14 @@ package rack.server.app;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
 import core.APIToken;
 import core.CodeTokenProvider;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
@@ -53,11 +50,17 @@ public class RACKServer_appServlet extends HttpServlet {
 				MaxentTagger tagger = (MaxentTagger) context
 						.getAttribute("tagger");
 				String validTerms = collectValidTerms(query, tagger);
+				if (tagger != null) {
+					System.out.println("POS Tagger loaded successfully!");
+				}
 
 				// collecting the stop words
 				@SuppressWarnings("unchecked")
 				ArrayList<String> stopwords = (ArrayList<String>) context
 						.getAttribute("stopwords");
+				if (stopwords != null) {
+					System.out.println("Stop words loaded successfully!");
+				}
 
 				CodeTokenProvider recommender = new CodeTokenProvider(
 						validTerms, stopwords);

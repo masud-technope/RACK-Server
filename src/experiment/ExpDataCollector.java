@@ -15,7 +15,7 @@ public class ExpDataCollector {
 
 	public ExpDataCollector() {
 		// variable initialization
-		this.oracleFile = StaticData.EVA_HOME + "/oracle-all.txt";
+		this.oracleFile = StaticData.EVA_HOME + "/oracle-all-noun-verb.txt";
 		this.queries = new ArrayList<>();
 		this.results = new ArrayList<>();
 	}
@@ -76,7 +76,7 @@ public class ExpDataCollector {
 
 	protected void saveResults() {
 		// save the collected results
-		String outFile = StaticData.EVA_HOME+ "/result-all-noun-verb.txt";
+		String outFile = StaticData.EVA_HOME+ "/result-all-noun-verb-5-5.txt";
 
 		try {
 			FileWriter fwriter = new FileWriter(new File(outFile));

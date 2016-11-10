@@ -5,7 +5,7 @@ import utility.ContentLoader;
 
 public class StopWordRemover {
 
-	ArrayList<String> stopwords;
+	ArrayList<String> stopwords=new ArrayList<>();
 	
 	public StopWordRemover() {
 		// default constructor

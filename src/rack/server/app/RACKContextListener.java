@@ -30,8 +30,8 @@ public class RACKContextListener implements ServletContextListener {
 		// store the tagger object
 		context.setAttribute("tagger", tagger);
 		
-		String stopword=context.getRealPath("/stopword");
-		String stopwordFile=stopword+"/en.txt";
+		String stopwordPath=context.getRealPath("/stopword");
+		String stopwordFile=stopwordPath+"/en.txt";
 		ArrayList<String> stops=new ArrayList<>(Arrays.asList(ContentLoader.getAllLines(stopwordFile)));
 		context.setAttribute("stopwords", stops);
 		

@@ -24,6 +24,7 @@ public class CodeTokenProvider {
 		this.tokenScoreMap = new HashMap<>();
 		this.stemmedQuery = new ArrayList<>();
 		this.tokenMap = new HashMap<>();
+		this.stopwords=new ArrayList<>();
 	}
 
 	public CodeTokenProvider(String query, ArrayList<String> stopwords) {
@@ -41,7 +42,7 @@ public class CodeTokenProvider {
 		String numRegex = "\\d+";
 		String[] tokens = tempQuery.split(regex);
 		// performing NLP
-		ArrayList<String> refined = new StopWordRemover()
+		ArrayList<String> refined = new StopWordRemover(this.stopwords)
 				.removeStopWords(tokens);
 		// ArrayList<String> refined=new
 		// ArrayList<String>(Arrays.asList(tokens));
@@ -134,7 +135,7 @@ public class CodeTokenProvider {
 						// storing the KKC scores
 						if (this.tokenMap.containsKey(token)) {
 							APIToken atoken = this.tokenMap.get(token);
-							atoken.KKCScore = simscore;
+							atoken.KKCScore += simscore;
 							this.tokenMap.put(token, atoken);
 						} else {
 							APIToken atoken = new APIToken();
@@ -177,7 +178,7 @@ public class CodeTokenProvider {
 				// storing KAC scores
 				if (this.tokenMap.containsKey(api)) {
 					APIToken atoken = this.tokenMap.get(api);
-					atoken.KACScore = score;
+					atoken.KACScore += score;
 					this.tokenMap.put(api, atoken);
 				} else {
 					APIToken atoken = new APIToken();
@@ -218,6 +219,43 @@ public class CodeTokenProvider {
 		return rankedAPIs;
 	}
 
+	protected void normalizeNSumScores() {
+		// normalize the scores
+		double maxKAC = 0;
+		double maxKKC = 0;
+		double maxTS = 0;
+
+		for (String key : this.tokenMap.keySet()) {
+			APIToken atoken = this.tokenMap.get(key);
+			if (atoken.KACScore > maxKAC) {
+				maxKAC = atoken.KACScore;
+			}
+			if (atoken.KKCScore > maxKKC) {
+				maxKKC = atoken.KKCScore;
+			}
+		}
+		// normalize and summate the scores
+		for (String key : this.tokenMap.keySet()) {
+			APIToken atoken = this.tokenMap.get(key);
+			atoken.KACScore = atoken.KACScore / maxKAC;
+			atoken.KKCScore = atoken.KKCScore / maxKKC;
+			atoken.totalScore = atoken.KACScore + atoken.KKCScore;
+			if (atoken.totalScore > maxTS) {
+				maxTS = atoken.totalScore;
+			}
+			this.tokenMap.put(key, atoken);
+		}
+
+		for (String key : this.tokenMap.keySet()) {
+			APIToken atoken = this.tokenMap.get(key);
+			atoken.totalScore = atoken.totalScore / maxTS;
+			this.tokenMap.put(key, atoken);
+			
+			this.tokenScoreMap.put(key, atoken.totalScore);
+			
+		}
+	}
+
 	public ArrayList<String> recommendRelevantAPIs() {
 		// recommend API names for a query
 		ArrayList<String> queryTerms = decomposeQueryTerms();
@@ -251,12 +289,14 @@ public class CodeTokenProvider {
 	public ArrayList<APIToken> recommendRelevantAPIs(boolean webVersion) {
 		// recommend API names for a query
 		ArrayList<String> queryTerms = decomposeQueryTerms();
-
 		// collecting scores
 		this.collectTokenScores(queryTerms);
 		// this.collectTokenScoresKAC(queryTerms);
 		// this.collectTokenScoresAAC(queryTerms);
 
+		//normalize and summate scores
+		this.normalizeNSumScores();
+		
 		ArrayList<String> apis = rankAPIElements();
 
 		// now refine the list
