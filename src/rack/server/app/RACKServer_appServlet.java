@@ -90,6 +90,7 @@ public class RACKServer_appServlet extends HttpServlet {
 			jobj.put("token", atoken.token);
 			jobj.put("KACScore", atoken.KACScore);
 			jobj.put("KKCScore", atoken.KKCScore);
+			jobj.put("CoocScore", atoken.CoocScore);
 			jobj.put("totalScore", atoken.totalScore);
 			jarray.add(jobj);
 		}
