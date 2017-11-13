@@ -22,17 +22,17 @@ public class RelevantAPICollector {
 		// translate the query terms into API
 		HashMap<String, ArrayList<String>> tokenmap = new HashMap<>();
 		try {
-			Class.forName(StaticData.Driver_name).newInstance();
+			//Class.forName(StaticData.Driver_name).newInstance();
 			Connection conn = DriverManager
 					.getConnection(StaticData.connectionString);
 			if (conn != null) {
 				Statement stmt = conn.createStatement();
 				for (String texttoken : queryTerms) {
-					String getCodeToken = "select top 5 ct.Token from CodeToken as ct, TextToken as tt "
+					String getCodeToken = "select ct.Token from CodeToken as ct, TextToken as tt "
 							+ " where ct.EntryID=tt.EntryID and tt.Token='"
 							+ texttoken
 							+ "'"
-							+ " group by ct.Token order by count(*) desc";
+							+ " group by ct.Token order by count(*) desc limit 5";
 					ResultSet results = stmt.executeQuery(getCodeToken);
 
 					ArrayList<String> apis = new ArrayList<>();

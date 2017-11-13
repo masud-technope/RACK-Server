@@ -41,7 +41,7 @@ public class CoocurrenceScoreProvider {
 
 	protected void collectCoocAPIs(ArrayList<String> keypairs) {
 		try {
-			Class.forName(StaticData.Driver_name).newInstance();
+			//Class.forName(StaticData.Driver_name).newInstance();
 			Connection conn = DriverManager
 					.getConnection(StaticData.connectionString);
 			if (conn != null) {

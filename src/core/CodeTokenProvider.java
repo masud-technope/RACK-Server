@@ -15,7 +15,7 @@ public class CodeTokenProvider {
 	String query;
 	HashMap<String, Double> tokenScoreMap;
 	HashMap<String, APIToken> tokenMap;
-	final int MAXAPI = StaticData.MAXAPI;
+	int MAXAPI = StaticData.MAXAPI;
 	public ArrayList<String> stemmedQuery;
 	public double gamma = 0;
 	ArrayList<String> stopwords;
@@ -26,6 +26,15 @@ public class CodeTokenProvider {
 		this.stemmedQuery = new ArrayList<>();
 		this.tokenMap = new HashMap<>();
 		this.stopwords = new ArrayList<>();
+	}
+
+	public CodeTokenProvider(String query, int TOPK) {
+		this.query = query;
+		this.tokenScoreMap = new HashMap<>();
+		this.stemmedQuery = new ArrayList<>();
+		this.tokenMap = new HashMap<>();
+		this.stopwords = new ArrayList<>();
+		this.MAXAPI = TOPK;
 	}
 
 	public CodeTokenProvider(String query, ArrayList<String> stopwords) {
@@ -421,9 +430,10 @@ public class CodeTokenProvider {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		String query = "sending email in Java";
-		CodeTokenProvider provider = new CodeTokenProvider(query);
+		int TOPK=5;
+		CodeTokenProvider provider = new CodeTokenProvider(query,TOPK);
 		ArrayList<APIToken> relevantAPIs = provider.recommendRelevantAPIs(true);
-		// System.out.println(relevantAPIs);
+		//System.out.println(relevantAPIs);
 		provider.showAPITokens(relevantAPIs, true);
 	}
 }

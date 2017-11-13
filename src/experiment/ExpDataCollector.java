@@ -9,13 +9,25 @@ import core.CodeTokenProvider;
 
 public class ExpDataCollector {
 
-	String oracleFile;
+	String queryFile;
+	String outputFile;
 	ArrayList<String> queries;
 	ArrayList<String> results;
+	int TOPK;
 
+	@Deprecated
 	public ExpDataCollector() {
 		// variable initialization
-		this.oracleFile = StaticData.EVA_HOME + "/oracle-all-noun-verb.txt";
+		this.queryFile = StaticData.EVA_HOME + "/oracle-all-noun-verb.txt";
+		this.queries = new ArrayList<>();
+		this.results = new ArrayList<>();
+	}
+
+	public ExpDataCollector(String queryFile, int TOPK, String outFile) {
+		this.queryFile = queryFile;
+		this.outputFile = outFile;
+		this.TOPK = TOPK;
+		StaticData.MAXAPI = this.TOPK;
 		this.queries = new ArrayList<>();
 		this.results = new ArrayList<>();
 	}
@@ -23,11 +35,11 @@ public class ExpDataCollector {
 	protected void collectQueries() {
 		// collect the code search queries
 		try {
-			Scanner scanner = new Scanner(new File(this.oracleFile));
+			Scanner scanner = new Scanner(new File(this.queryFile));
 			while (scanner.hasNext()) {
 				String query = scanner.nextLine();
 				this.queries.add(query);
-				scanner.nextLine();
+				// scanner.nextLine();
 			}
 			scanner.close();
 		} catch (Exception exc) {
@@ -44,7 +56,7 @@ public class ExpDataCollector {
 		return line;
 	}
 
-	protected void collectExpResults() {
+	public void collectExpResults() {
 		// collecting experiment results
 		try {
 			this.collectQueries();
@@ -55,36 +67,35 @@ public class ExpDataCollector {
 					ArrayList<String> result = apiProvider
 							.recommendRelevantAPIs();
 					String line = convertAPI2String(result);
-
-					ArrayList<String> usedQueryTokens = apiProvider.stemmedQuery;
-
-					String qline = convertAPI2String(usedQueryTokens);
-
-					this.results.add(qline);
+					// ArrayList<String> usedQueryTokens =
+					// apiProvider.stemmedQuery;
+					// String qline = convertAPI2String(usedQueryTokens);
+					this.results.add(query);
 					this.results.add(line);
-					System.out.println("Collected for: " + (++count));
+					this.results.add("");// blank line
+					System.out.println("Done: Query #" + (++count));
 				} catch (Exception exc) {
-
+					System.err
+							.println("Failed to collect API names for: Query #"
+									+ query);
 				}
 			}
 			// now save the results
-			saveResults();
+			saveResults(this.outputFile);
 		} catch (Exception exc) {
 			exc.printStackTrace();
 		}
 	}
 
-	protected void saveResults() {
+	protected void saveResults(String outFile) {
 		// save the collected results
-		String outFile = StaticData.EVA_HOME+ "/result-all-noun-verb-5-5.txt";
-
 		try {
 			FileWriter fwriter = new FileWriter(new File(outFile));
 			for (String line : this.results) {
 				fwriter.write(line + "\n");
 			}
 			fwriter.close();
-			System.out.println("Results saved successfully!");
+			System.out.println("Collected API names saved successfully!");
 		} catch (Exception exc) {
 			exc.printStackTrace();
 		}
@@ -92,7 +103,12 @@ public class ExpDataCollector {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		ExpDataCollector collector = new ExpDataCollector();
-		collector.collectExpResults();
+		// ExpDataCollector collector = new ExpDataCollector();
+		// collector.collectExpResults();
+		String query = "How to send email in Java?";
+		int TOPK=5;
+		CodeTokenProvider ctProvider = new CodeTokenProvider(query,TOPK);
+		System.out.println(ctProvider.recommendRelevantAPIs());
+
 	}
 }

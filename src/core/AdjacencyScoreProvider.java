@@ -26,7 +26,7 @@ public class AdjacencyScoreProvider {
 	protected void collectAdjacentTerms() {
 		// collect adjacency terms
 		try {
-			Class.forName(StaticData.Driver_name).newInstance();
+			//Class.forName(StaticData.Driver_name).newInstance();
 			Connection conn = DriverManager
 					.getConnection(StaticData.connectionString);
 			if (conn != null) {
