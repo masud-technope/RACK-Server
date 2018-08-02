@@ -107,7 +107,7 @@ public class ExpDataCollector {
 		// collector.collectExpResults();
 		String query = "How to send email in Java?";
 		int TOPK=5;
-		CodeTokenProvider ctProvider = new CodeTokenProvider(query,TOPK);
+		CodeTokenProvider ctProvider = new CodeTokenProvider(query);
 		System.out.println(ctProvider.recommendRelevantAPIs());
 
 	}

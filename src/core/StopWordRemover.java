@@ -5,20 +5,11 @@ import utility.ContentLoader;
 
 public class StopWordRemover {
 
-	ArrayList<String> stopwords=new ArrayList<>();
-	
-	public StopWordRemover() {
-		// default constructor
-		this.stopwords=new ArrayList<>();
-	}
+	static ArrayList<String> stopwords = new ArrayList<>();
 
-	public StopWordRemover(ArrayList<String> stopwords) {
-		this.stopwords=stopwords;
-	}
-
-	protected void loadStopWords() {
+	protected static void loadStopWords() {
 		// loading stop words
-		if (this.stopwords.isEmpty()) {
+		if (stopwords.isEmpty()) {
 			String[] lines = ContentLoader.getAllLines("./stopword/en.txt");
 			for (String line : lines) {
 				stopwords.add(line.trim());
@@ -26,7 +17,7 @@ public class StopWordRemover {
 		}
 	}
 
-	public ArrayList<String> removeStopWords(String[] tokens) {
+	public static ArrayList<String> removeStopWords(String[] tokens) {
 		// loading stop words
 		loadStopWords();
 		// now remove the stop words

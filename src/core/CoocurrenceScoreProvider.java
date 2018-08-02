@@ -9,13 +9,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import config.StaticData;
+import dbaccess.ConnectionManager;
 
 public class CoocurrenceScoreProvider {
 
 	ArrayList<String> queryTerms;
 	ArrayList<String> keys;
 	HashMap<String, ArrayList<String>> coocAPIMap;
-	final int TOPK_API_THRESHOLD = 10;
+	final int TOPK_API_THRESHOLD = StaticData.DELTA1;
 	HashMap<String, Double> coocScoreMap;
 
 	public CoocurrenceScoreProvider(ArrayList<String> queryTerms) {
@@ -41,21 +42,23 @@ public class CoocurrenceScoreProvider {
 
 	protected void collectCoocAPIs(ArrayList<String> keypairs) {
 		try {
-			//Class.forName(StaticData.Driver_name).newInstance();
-			Connection conn = DriverManager
-					.getConnection(StaticData.connectionString);
+			Connection conn = ConnectionManager.conn;
+			if (conn == null) {
+				conn = ConnectionManager.getConnection();
+			}
 			if (conn != null) {
 				for (String keypair : keypairs) {
 					String[] parts = keypair.split("-");
 					String first = parts[0];
 					String second = parts[1];
-					String getCocc = "select top " + TOPK_API_THRESHOLD
+					String getCocc = "select "
 							+ " Token from CodeToken where EntryID in("
-							+ "(select EntryID from TextToken where Token='"
-							+ first + "')" + "intersect"
-							+ "(select EntryID from TextToken where Token='"
-							+ second + "'))"
-							+ "group by Token order by count(*) desc";
+							+ "select EntryID from TextToken where Token='"
+							+ first + "' " + " intersect "
+							+ " select EntryID from TextToken where Token='"
+							+ second + "')"
+							+ "group by Token order by count(*) desc limit "
+							+ TOPK_API_THRESHOLD;
 					Statement stmt = conn.createStatement();
 					ResultSet results = stmt.executeQuery(getCocc);
 					ArrayList<String> temp = new ArrayList<>();
@@ -69,6 +72,7 @@ public class CoocurrenceScoreProvider {
 			}
 		} catch (Exception exc) {
 			// handle the exception
+			exc.printStackTrace();
 		}
 	}
 

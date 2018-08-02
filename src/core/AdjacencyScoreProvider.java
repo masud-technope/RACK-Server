@@ -6,14 +6,16 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import similarity.CosineSimilarityMeasure;
 import config.StaticData;
+import dbaccess.ConnectionManager;
 
 public class AdjacencyScoreProvider {
 
 	ArrayList<String> queryTerms;
 	HashMap<String, ArrayList<String>> adjacencymap;
-	ArrayList<String> keys;
+	public ArrayList<String> keys;
 	double[][] simscores;
 
 	public AdjacencyScoreProvider(ArrayList<String> queryTerms) {
@@ -23,12 +25,13 @@ public class AdjacencyScoreProvider {
 		this.keys=new ArrayList<>();
 	}
 
-	protected void collectAdjacentTerms() {
+	public void collectAdjacentTerms() {
 		// collect adjacency terms
 		try {
-			//Class.forName(StaticData.Driver_name).newInstance();
+			/*Class.forName(StaticData.Driver_name).newInstance();
 			Connection conn = DriverManager
-					.getConnection(StaticData.connectionString);
+					.getConnection(StaticData.connectionString);*/
+			Connection conn=ConnectionManager.getConnection();
 			if (conn != null) {
 				for (String key : queryTerms) {
 					String getAdjacent = "select distinct Token from TextToken where EntryID in "
@@ -44,14 +47,14 @@ public class AdjacencyScoreProvider {
 					// now add the adjacent list to the query
 					this.adjacencymap.put(key, adjacent);
 				}
-				conn.close();
+				//conn.close();
 			}
 		} catch (Exception exc) {
 			exc.printStackTrace();
 		}
 	}
 	
-	protected  double[][] collectAdjacencyScores()
+	public  double[][] collectAdjacencyScores()
 	{
 		//collect adjacency scores
 		int dimension=adjacencymap.keySet().size();

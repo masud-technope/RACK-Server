@@ -13,7 +13,7 @@ public class SQLAccessDemo {
 		try {
 			String USER_DIR=System.getProperty("user.dir");
 			// db parameters
-			String url = "jdbc:sqlite:"+USER_DIR+"/database/CodeTokenRec.db";
+			String url = "jdbc:sqlite:"+USER_DIR+"/database/RACK-EMSE.db";
 			// create a connection to the database
 			conn = DriverManager.getConnection(url);
 			

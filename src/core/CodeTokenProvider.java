@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
 import config.StaticData;
 import utility.ItemSorter;
 
@@ -14,35 +13,21 @@ public class CodeTokenProvider {
 
 	String query;
 	HashMap<String, Double> tokenScoreMap;
-	HashMap<String, APIToken> tokenMap;
-	int MAXAPI = StaticData.MAXAPI;
+	final int MAXAPI = StaticData.MAXAPI;
 	public ArrayList<String> stemmedQuery;
-	public double gamma = 0;
-	ArrayList<String> stopwords;
+	public double gamma = StaticData.gamma;
+	HashMap<String, Double> KACMap;
+	HashMap<String, Double> KPACMap;
+	HashMap<String, Double> KKCMap;
 
 	public CodeTokenProvider(String query) {
 		this.query = query;
 		this.tokenScoreMap = new HashMap<>();
 		this.stemmedQuery = new ArrayList<>();
-		this.tokenMap = new HashMap<>();
-		this.stopwords = new ArrayList<>();
-	}
-
-	public CodeTokenProvider(String query, int TOPK) {
-		this.query = query;
-		this.tokenScoreMap = new HashMap<>();
-		this.stemmedQuery = new ArrayList<>();
-		this.tokenMap = new HashMap<>();
-		this.stopwords = new ArrayList<>();
-		this.MAXAPI = TOPK;
-	}
-
-	public CodeTokenProvider(String query, ArrayList<String> stopwords) {
-		this.query = query;
-		this.tokenScoreMap = new HashMap<>();
-		this.stemmedQuery = new ArrayList<>();
-		this.tokenMap = new HashMap<>();
-		this.stopwords = stopwords;
+		// adding the extra maps
+		this.KACMap = new HashMap<>();
+		this.KPACMap = new HashMap<>();
+		this.KKCMap = new HashMap<>();
 	}
 
 	protected ArrayList<String> decomposeQueryTerms() {
@@ -52,8 +37,7 @@ public class CodeTokenProvider {
 		String numRegex = "\\d+";
 		String[] tokens = tempQuery.split(regex);
 		// performing NLP
-		ArrayList<String> refined = new StopWordRemover(this.stopwords)
-				.removeStopWords(tokens);
+		ArrayList<String> refined = StopWordRemover.removeStopWords(tokens);
 		// ArrayList<String> refined=new
 		// ArrayList<String>(Arrays.asList(tokens));
 		ArrayList<String> stemmed = TokenStemmer.performStemming(refined);
@@ -75,26 +59,6 @@ public class CodeTokenProvider {
 		return stemmedQuery;
 	}
 
-	protected void collectTokenScoresOld(ArrayList<String> queryTerms) {
-		// collecting token scores
-		AdjacencyScoreProvider adjacent = new AdjacencyScoreProvider(queryTerms);
-		// adjacency scores
-		adjacent.collectAdjacentTerms();
-		double[][] simscores = adjacent.collectAdjacencyScores();
-		// keys
-		ArrayList<String> keys = new ArrayList<>(adjacent.keys);
-
-		RelevantAPICollector collector = new RelevantAPICollector(queryTerms);
-		HashMap<String, ArrayList<String>> tokenmap = collector
-				.collectAPIsforQuery();
-		// System.out.println(tokenmap);
-		tokenScoreMap = new HashMap<>();
-
-		// now add the scores
-		this.addAssociationFrequencyScores(tokenmap);
-		this.addTokenSimilarityScores(keys, simscores, tokenmap);
-	}
-
 	protected void collectTokenScores(ArrayList<String> queryTerms) {
 		// collecting token scores
 		AdjacencyScoreProvider adjacent = new AdjacencyScoreProvider(queryTerms);
@@ -108,61 +72,33 @@ public class CodeTokenProvider {
 		HashMap<String, ArrayList<String>> tokenmap = collector
 				.collectAPIsforQuery();
 		// System.out.println(tokenmap);
-		// tokenScoreMap = new HashMap<>();
+		tokenScoreMap = new HashMap<>();
 		// now add the scores
 		// KAC scores
 		this.addAssociationFrequencyScores(tokenmap);
 		// KKC scores
 		this.addTokenSimilarityScores(keys, simscores, tokenmap);
-		// direct cooc-score
+		// KPAC scores
 		this.addDirectCoocScores();
 		// add the textual similarity scores
 		// this.addLexicalSimilarityScores(queryTerms, new ArrayList<>(
 		// tokenScoreMap.keySet()));
+		this.addExtraLayerScoreComputation();
+
 	}
 
-	protected void addDirectCoocScores() {
-		// adding direct co-occurrence scores
-		CoocurrenceScoreProvider coocProvider = new CoocurrenceScoreProvider(
-				this.stemmedQuery);
-		HashMap<String, Double> coocScoreMap = coocProvider.getCoocScores();
-		for (String apiKey : coocScoreMap.keySet()) {
-			double coocScore = coocScoreMap.get(apiKey);
-			if (tokenScoreMap.containsKey(apiKey)) {
-				double newScore = tokenScoreMap.get(apiKey) + coocScore;
-				tokenScoreMap.put(apiKey, newScore);
-			} else {
-				tokenScoreMap.put(apiKey, coocScore);
-			}
-
-			// adding tokens to token map
-			// storing the KKC scores
-			if (this.tokenMap.containsKey(apiKey)) {
-				APIToken atoken = this.tokenMap.get(apiKey);
-				atoken.CoocScore += coocScore;
-				this.tokenMap.put(apiKey, atoken);
-			} else {
-				APIToken atoken = new APIToken();
-				atoken.token = apiKey;
-				atoken.CoocScore = coocScore;
-				this.tokenMap.put(apiKey, atoken);
-			}
-		}
-	}
-
-	@Deprecated
-	protected void collectTokenScoresKAC(ArrayList<String> queryTerms) {
+	public void collectTokenScoresKAC(ArrayList<String> queryTerms) {
 		// collecting token scores based on KAC
 		RelevantAPICollector collector = new RelevantAPICollector(queryTerms);
 		HashMap<String, ArrayList<String>> tokenmap = collector
 				.collectAPIsforQuery();
 		tokenScoreMap = new HashMap<>();
+
 		// now add the scores
 		this.addAssociationFrequencyScores(tokenmap);
 	}
 
-	@Deprecated
-	protected void collectTokenScoresAAC(ArrayList<String> queryTerms) {
+	protected void collectTokenScoresKKC(ArrayList<String> queryTerms) {
 		// collecting scores based on AAC
 		AdjacencyScoreProvider adjacent = new AdjacencyScoreProvider(queryTerms);
 		// adjacency scores
@@ -179,6 +115,11 @@ public class CodeTokenProvider {
 		this.addTokenSimilarityScores(keys, simscores, tokenmap);
 	}
 
+	protected void collectTokenScoresKPAC(ArrayList<String> queryTerms) {
+		this.tokenScoreMap = new HashMap<>();
+		this.addDirectCoocScores();
+	}
+
 	protected void addTokenSimilarityScores(ArrayList<String> keys,
 			double[][] simscores, HashMap<String, ArrayList<String>> tokenmap) {
 		for (int i = 0; i < keys.size(); i++) {
@@ -189,38 +130,33 @@ public class CodeTokenProvider {
 				ArrayList<String> secondapi = tokenmap.get(second);
 				HashSet<String> common = intersect(firstapi, secondapi);
 				double simscore = simscores[i][j];
+
+				// add the weight
+				// double gamma = (1 - StaticData.alpha + StaticData.beta);
+				// simscore = simscore * gamma;
+
 				if (simscore > gamma) {
 					for (String token : common) {
 						if (tokenScoreMap.containsKey(token)) {
-							double newScore = tokenScoreMap.get(token)
+							double newOldScore = tokenScoreMap.get(token)
 									+ simscore;
-							tokenScoreMap.put(token, newScore);
+							tokenScoreMap.put(token, newOldScore);
 						} else {
 							tokenScoreMap.put(token, simscore);
 						}
 
-						// storing the KKC scores
-						if (this.tokenMap.containsKey(token)) {
-							APIToken atoken = this.tokenMap.get(token);
-							atoken.KKCScore += simscore;
-							this.tokenMap.put(token, atoken);
+						// adding to the extra map
+						if (KKCMap.containsKey(token)) {
+							double newOldScore = KKCMap.get(token) + simscore;
+							KKCMap.put(token, newOldScore);
 						} else {
-							APIToken atoken = new APIToken();
-							atoken.token = token;
-							atoken.KKCScore = simscore;
-							this.tokenMap.put(token, atoken);
+							KKCMap.put(token, simscore);
 						}
+
 					}
 				}
 			}
 		}
-
-		// now show the KAC score of the APIs
-		// System.out.println("KKC Score============");
-		// for (String key : tokenScoreMap.keySet()) {
-		// System.out.println(key + " " + tokenScoreMap.get(key));
-		// }
-		// System.out.println("KKC Score============ended");
 	}
 
 	protected void addAssociationFrequencyScores(
@@ -231,7 +167,12 @@ public class CodeTokenProvider {
 			int length = apis.size();
 			for (int i = 0; i < apis.size(); i++) {
 				// now determine the score
+
 				double score = 1 - (double) i / length;
+
+				// add the weight
+				// score = score * StaticData.alpha;
+
 				String api = apis.get(i);
 				// now check the score for each API
 				// add the score to the map
@@ -242,27 +183,71 @@ public class CodeTokenProvider {
 					tokenScoreMap.put(api, score);
 				}
 
-				// storing KAC scores
-				if (this.tokenMap.containsKey(api)) {
-					APIToken atoken = this.tokenMap.get(api);
-					atoken.KACScore += score;
-					this.tokenMap.put(api, atoken);
+				// adding scores to the extra map
+				if (KACMap.containsKey(api)) {
+					double newScore = KACMap.get(api) + score;
+					KACMap.put(api, newScore);
 				} else {
-					APIToken atoken = new APIToken();
-					atoken.token = api;
-					atoken.KACScore = score;
-					this.tokenMap.put(api, atoken);
+					KACMap.put(api, score);
 				}
 			}
 		}
+	}
 
-		// now show the KAC score of the APIs
-		// System.out.println("KAC Score============");
-		// for (String key : tokenScoreMap.keySet()) {
-		// System.out.println(key + " " + tokenScoreMap.get(key));
-		// }
-		// System.out.println("KAC Score============ended");
+	protected void addDirectCoocScores() {
+		// adding direct co-occurrence scores
+		CoocurrenceScoreProvider coocProvider = new CoocurrenceScoreProvider(
+				this.stemmedQuery);
+		HashMap<String, Double> coocScoreMap = coocProvider.getCoocScores();
+		for (String apiKey : coocScoreMap.keySet()) {
+			double coocScore = coocScoreMap.get(apiKey);
 
+			// add the weight
+			// coocScore = coocScore * StaticData.beta;
+
+			// adding to the token map
+			// adding to the token score map
+			if (tokenScoreMap.containsKey(apiKey)) {
+				double newScore = tokenScoreMap.get(apiKey) + coocScore;
+				tokenScoreMap.put(apiKey, newScore);
+			} else {
+				tokenScoreMap.put(apiKey, coocScore);
+			}
+
+			// adding to the extra map
+			if (KPACMap.containsKey(apiKey)) {
+				double newScore = KPACMap.get(apiKey) + coocScore;
+				KPACMap.put(apiKey, newScore);
+			} else {
+				KPACMap.put(apiKey, coocScore);
+			}
+		}
+	}
+
+	@Deprecated
+	protected void addLexicalSimilarityScores(ArrayList<String> queryTerms,
+			ArrayList<String> candidates) {
+		// adding lexical similarity score to the candidates
+		LexicalSimilarityProvider lexProvider = new LexicalSimilarityProvider(
+				queryTerms, candidates);
+		HashMap<String, Double> simScoreMap = lexProvider
+				.getLexicalSimilarityScores();
+		for (String key : simScoreMap.keySet()) {
+			double simScore = simScoreMap.get(key);
+			if (this.tokenScoreMap.containsKey(key)) {
+				double primaryScore = this.tokenScoreMap.get(key);
+
+				/*
+				 * double secondaryScore = primaryScore > simScore ?
+				 * primaryScore : simScore;
+				 */
+				// adding the lexical score as well
+				double secondaryScore = primaryScore + simScore;
+				this.tokenScoreMap.put(key, secondaryScore);
+			} else {
+				this.tokenScoreMap.put(key, simScore);
+			}
+		}
 	}
 
 	protected HashSet<String> intersect(ArrayList<String> s1,
@@ -280,72 +265,181 @@ public class CodeTokenProvider {
 		ArrayList<String> rankedAPIs = new ArrayList<>();
 		for (Map.Entry<String, Double> entry : sorted) {
 			rankedAPIs.add(entry.getKey());
-			// System.out.println(entry.getKey() + " " + entry.getValue());
+			//System.out.println(entry.getKey() + " " + entry.getValue());
 		}
 		// returning the ranked APIs
 		return rankedAPIs;
 	}
 
-	protected void normalizeNSumScores() {
-		// normalize the scores
-		double maxKAC = 0;
-		double maxKKC = 0;
-		double maxTS = 0;
-
-		for (String key : this.tokenMap.keySet()) {
-			APIToken atoken = this.tokenMap.get(key);
-			if (atoken.KACScore > maxKAC) {
-				maxKAC = atoken.KACScore;
-			}
-			if (atoken.KKCScore > maxKKC) {
-				maxKKC = atoken.KKCScore;
+	protected ArrayList<String> rankAPIElements(HashMap<String, Double> scoreMap) {
+		// rank the API names
+		List<Map.Entry<String, Double>> sorted = ItemSorter
+				.sortHashMapDouble(scoreMap);
+		ArrayList<String> rankedAPIs = new ArrayList<>();
+		for (Map.Entry<String, Double> entry : sorted) {
+			rankedAPIs.add(entry.getKey());
+			// System.out.println(entry.getKey() + " " + entry.getValue());
+		}
+		// rankedAPIs = discardDuplicates(rankedAPIs);
+		ArrayList<String> topRanked = new ArrayList<>();
+		for (String api : rankedAPIs) {
+			if (api.trim().isEmpty())
+				continue;
+			topRanked.add(api);
+			if (topRanked.size() == StaticData.MAXAPI) {
+				break;
 			}
 		}
-		// normalize and summate the scores
-		for (String key : this.tokenMap.keySet()) {
-			APIToken atoken = this.tokenMap.get(key);
-			atoken.KACScore = atoken.KACScore / maxKAC;
-			atoken.KKCScore = atoken.KKCScore / maxKKC;
-			atoken.totalScore = atoken.KACScore + atoken.KKCScore;
-			if (atoken.totalScore > maxTS) {
-				maxTS = atoken.totalScore;
-			}
-			this.tokenMap.put(key, atoken);
-		}
 
-		for (String key : this.tokenMap.keySet()) {
-			APIToken atoken = this.tokenMap.get(key);
-			atoken.totalScore = atoken.totalScore / maxTS;
-			this.tokenMap.put(key, atoken);
-
-			this.tokenScoreMap.put(key, atoken.totalScore);
-
-		}
+		// returning the ranked APIs
+		return topRanked;
 	}
 
-	public ArrayList<String> recommendRelevantAPIs() {
+	protected void addExtraLayerScoreComputation() {
+		ArrayList<String> kacs = rankAPIElements(this.KACMap);
+		HashMap<String, Double> kacScoreMap = getNormScore(kacs);
+		ArrayList<String> kpacs = rankAPIElements(this.KPACMap);
+		HashMap<String, Double> kpacScoreMap = getNormScore(kpacs);
+		ArrayList<String> kkcs = rankAPIElements(this.KKCMap);
+		HashMap<String, Double> kkcScoreMap = getNormScore(kkcs);
+		this.addCombinedRankingsV2(kacScoreMap, kpacScoreMap, kkcScoreMap,
+				StaticData.alpha, StaticData.beta, StaticData.psi);
+
+	}
+
+	protected void addCombinedRankings(HashMap<String, Double> kacMap,
+			HashMap<String, Double> kpacMap, HashMap<String, Double> kkcMap,
+			double alpha1, double beta1, double psi1) {
+		// get the combined rankings
+		tokenScoreMap = new HashMap<>();
+		// HashMap<String, Double> tokenScoreMap = new HashMap<>();
+		for (String key : kacMap.keySet()) {
+			Double score = kacMap.get(key);
+			score = score * alpha1;
+			if (tokenScoreMap.containsKey(key)) {
+				double newScore = tokenScoreMap.get(key) + score;
+				tokenScoreMap.put(key, newScore);
+			} else {
+				tokenScoreMap.put(key, score);
+			}
+		}
+		for (String key : kpacMap.keySet()) {
+			Double score = kpacMap.get(key);
+			score = score * beta1;
+			if (tokenScoreMap.containsKey(key)) {
+				double newScore = tokenScoreMap.get(key) + score;
+				tokenScoreMap.put(key, newScore);
+			} else {
+				tokenScoreMap.put(key, score);
+			}
+		}
+
+		for (String key : kkcMap.keySet()) {
+			Double score = kkcMap.get(key);
+			score = score * psi1;
+			if (tokenScoreMap.containsKey(key)) {
+				double newScore = tokenScoreMap.get(key) + score;
+				tokenScoreMap.put(key, newScore);
+			} else {
+				tokenScoreMap.put(key, score);
+			}
+		}
+		// return rankAPIElements(tokenScoreMap);
+	}
+
+	protected void addCombinedRankingsV2(HashMap<String, Double> kacMap,
+			HashMap<String, Double> kpacMap, HashMap<String, Double> kkcMap,
+			double alpha1, double beta1, double psi1) {
+		// get the combined rankings
+		tokenScoreMap = new HashMap<>();
+		// HashMap<String, Double> tokenScoreMap = new HashMap<>();
+		for (String key : kacMap.keySet()) {
+			Double score = kacMap.get(key);
+			score = score * alpha1;
+			if (tokenScoreMap.containsKey(key)) {
+				double newScore = Math.max(tokenScoreMap.get(key), score);
+				tokenScoreMap.put(key, newScore);
+			} else {
+				tokenScoreMap.put(key, score);
+			}
+		}
+		for (String key : kpacMap.keySet()) {
+			Double score = kpacMap.get(key);
+			score = score * beta1;
+			if (tokenScoreMap.containsKey(key)) {
+				double newScore = Math.max(tokenScoreMap.get(key), score);
+				tokenScoreMap.put(key, newScore);
+			} else {
+				tokenScoreMap.put(key, score);
+			}
+		}
+
+		for (String key : kkcMap.keySet()) {
+			Double score = kkcMap.get(key);
+			score = score * psi1;
+			if (tokenScoreMap.containsKey(key)) {
+				double newScore = Math.max(tokenScoreMap.get(key), score);
+				tokenScoreMap.put(key, newScore);
+			} else {
+				tokenScoreMap.put(key, score);
+			}
+		}
+		// return rankAPIElements(tokenScoreMap);
+	}
+
+	protected HashMap<String, Double> getNormScore(ArrayList<String> apis) {
+		HashMap<String, Double> tempMap = new HashMap<>();
+		int index = 0;
+		for (String api : apis) {
+			index++;
+			double score = 1 - (double) index / apis.size();
+			tempMap.put(api, score);
+			// index++;
+		}
+		return tempMap;
+	}
+
+	public ArrayList<String> recommendRelevantAPIs(String... key) {
 		// recommend API names for a query
 		ArrayList<String> queryTerms = decomposeQueryTerms();
-
 		// collecting scores
-		this.collectTokenScores(queryTerms);
-		// this.collectTokenScoresKAC(queryTerms);
-		// this.collectTokenScoresAAC(queryTerms);
+		if (key.length > 0) {
+			switch (key[0]) {
+			case "KAC":
+				this.collectTokenScoresKAC(queryTerms);
+				break;
+			case "KPAC":
+				this.collectTokenScoresKPAC(queryTerms);
+				break;
+			case "KKC":
+				this.collectTokenScoresKKC(queryTerms);
+				break;
+			case "all":
+				this.collectTokenScores(queryTerms);
+				break;
+			default:
+				this.collectTokenScores(queryTerms);
+				break;
+			}
+		} else {
+			this.collectTokenScores(queryTerms);
+		}
 
 		ArrayList<String> apis = rankAPIElements();
 
 		// now refine the list
-		apis = discardDuplicates(apis);
+		// lets keep the duplicates
+		// apis = discardDuplicates(apis);
 
 		// now demonstrate the API
-		int count = 0;
 		ArrayList<String> result = new ArrayList<>();
 
 		for (String api : apis) {
 			// System.out.println(api);
+			if (api.trim().isEmpty())
+				continue;
 			result.add(api);
-			count++;
-			if (count == MAXAPI)
+			if (result.size() == StaticData.MAXAPI)
 				break;
 		}
 		// showAPIs(apis);
@@ -353,58 +447,10 @@ public class CodeTokenProvider {
 		return result;
 	}
 
-	public ArrayList<APIToken> recommendRelevantAPIs(boolean webVersion) {
-		// recommend API names for a query
-		ArrayList<String> queryTerms = decomposeQueryTerms();
-		// collecting scores
-		this.collectTokenScores(queryTerms);
-		// this.collectTokenScoresKAC(queryTerms);
-		// this.collectTokenScoresAAC(queryTerms);
-
-		// normalize and summate scores
-		this.normalizeNSumScores();
-
-		ArrayList<String> apis = rankAPIElements();
-
-		// now refine the list
-		apis = discardDuplicates(apis);
-
-		// now demonstrate the API
-		int count = 0;
-		ArrayList<APIToken> result = new ArrayList<>();
-
-		for (String api : apis) {
-			APIToken atoken = this.tokenMap.get(api);
-			atoken.totalScore = tokenScoreMap.get(api);
-			result.add(atoken);
-			count++;
-			if (count == MAXAPI)
-				break;
-		}
-		return result;
-	}
-
 	protected void showAPIs(ArrayList<String> apis) {
 		// showing the ranked APIs
 		for (String api : apis) {
 			System.out.println(api);
-		}
-	}
-
-	protected void showAPITokens(ArrayList<APIToken> apis) {
-		// showing API ranks
-		for (APIToken atoken : apis) {
-			System.out.println(atoken.token + "\t" + atoken.KACScore + "\t"
-					+ atoken.KKCScore + "\t" + atoken.totalScore);
-		}
-	}
-
-	protected void showAPITokens(ArrayList<APIToken> apis, boolean extended) {
-		// showing API ranks
-		for (APIToken atoken : apis) {
-			System.out.println(atoken.token + "\t" + atoken.KACScore + "\t"
-					+ atoken.KKCScore + "\t" + atoken.CoocScore + "\t"
-					+ atoken.totalScore);
 		}
 	}
 
@@ -429,11 +475,9 @@ public class CodeTokenProvider {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String query = "sending email in Java";
-		int TOPK=5;
-		CodeTokenProvider provider = new CodeTokenProvider(query,TOPK);
-		ArrayList<APIToken> relevantAPIs = provider.recommendRelevantAPIs(true);
-		//System.out.println(relevantAPIs);
-		provider.showAPITokens(relevantAPIs, true);
+		String query = "How do I connect to a MongoDB Database?";
+		CodeTokenProvider provider = new CodeTokenProvider(query);
+		ArrayList<String> results = provider.recommendRelevantAPIs("all");
+		provider.showAPIs(results);
 	}
 }
