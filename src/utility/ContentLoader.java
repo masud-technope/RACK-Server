@@ -3,6 +3,7 @@ package utility;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ContentLoader {
@@ -39,6 +40,23 @@ public class ContentLoader {
 			exc.printStackTrace();
 		}
 		return content;
+	}
+	
+	public static ArrayList<String> getAllLinesOptList(String fileName) {
+		ArrayList<String> lines = new ArrayList<>();
+		try {
+			File f = new File(fileName);
+			BufferedReader bufferedReader = new BufferedReader(
+					new FileReader(f));
+			while (bufferedReader.ready()) {
+				String line = bufferedReader.readLine().trim();
+				lines.add(line);
+			}
+			bufferedReader.close();
+		} catch (Exception ex) {
+			// handle the exception
+		}
+		return lines;
 	}
 
 	public static String[] getAllLines(String fileName) {

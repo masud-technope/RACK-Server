@@ -1,11 +1,8 @@
 package experiment;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Scanner;
-import config.StaticData;
+import utility.ContentLoader;
 
 public class ResultAnalyzer {
 
@@ -14,76 +11,88 @@ public class ResultAnalyzer {
 	HashMap<Integer, ArrayList<String>> results;
 	HashMap<Integer, ArrayList<String>> golddata;
 	int K;
+	boolean strictMatching = false;
+	public HashMap<Integer, Double> precisionMap;
+	public HashMap<Integer, Double> recallMap;
+	public HashMap<Integer, Double> rrankMap;
+	public HashMap<Integer, Double> accMap;
 
-	public ResultAnalyzer(int K) {
+	public ResultAnalyzer(String oracleFile, String resultFile, int K,
+			boolean strictMatching) {
+
 		// variable initialization
-		this.oracleFile = StaticData.EVA_HOME + "/oracle-all-noun-verb.txt";
-		this.resultFile = StaticData.EVA_HOME
-				+ "/result-all-noun-verb.txt";
-		this.results = new HashMap<>();
-		this.golddata = new HashMap<>();
-		this.collectGoldAPIs();
-		this.collectExpResult();
+		this.strictMatching = strictMatching;
+		this.oracleFile = oracleFile;
+		this.resultFile = resultFile;
+		this.results = collectExperimentalResults();
+		this.golddata = collectGoldsetAPIs();
 		this.K = K;
+
+		// latest addition
+		this.precisionMap = new HashMap<>();
+		this.recallMap = new HashMap<>();
+		this.rrankMap = new HashMap<>();
+		this.accMap = new HashMap<>();
 	}
 
-	protected void collectGoldAPIs() {
-		// collect gold APIs
-		try {
-			Scanner scanner = new Scanner(new File(this.oracleFile));
-			int key = 0;
-			while (scanner.hasNext()) {
-				scanner.nextLine();
-				String goldAPI = scanner.nextLine().trim();
-				String[] apis = goldAPI.split("\\s+");
-				ArrayList<String> apilist = new ArrayList<>(Arrays.asList(apis));
-				this.golddata.put(++key, apilist);
+	protected String[] decomposeCamelCase(String token) {
+		// decomposing camel case tokens using regex
+		String camRegex = "([a-z])([A-Z]+)";
+		String replacement = "$1/t$2";
+		String filtered = token.replaceAll(camRegex, replacement);
+		String[] ftokens = filtered.split("//s+");
+		return ftokens;
+	}
+
+	protected HashMap<Integer, ArrayList<String>> collectGoldsetAPIs() {
+		// collect goldset API classes
+		ArrayList<String> fileLines = ContentLoader
+				.getAllLinesOptList(this.oracleFile);
+		int key = 0;
+		HashMap<Integer, ArrayList<String>> tempMap = new HashMap<>();
+		for (int i = 0; i < fileLines.size(); i += 2) {
+			String goldAPI = fileLines.get(i + 1).trim();
+			String[] apis = goldAPI.split("\\s+");
+			ArrayList<String> apilist = new ArrayList<>();
+			for (String api : apis) {
+				apilist.add(api);
 			}
-			scanner.close();
-		} catch (Exception exc) {
-			exc.printStackTrace();
+			tempMap.put(++key, apilist);
 		}
+		return tempMap;
 	}
 
-	protected void collectExpResult() {
+	protected HashMap<Integer, ArrayList<String>> collectExperimentalResults() {
 		// collecting experimental results
-		try {
-			Scanner scanner = new Scanner(new File(this.resultFile));
-			int key = 0;
-			int qwordcount = 0;
-			while (scanner.hasNext()) {
-				String qwords = scanner.nextLine();
-				qwordcount += qwords.split("\\s+").length;
-				String resultAPI = scanner.nextLine().trim();
-				if(resultAPI.isEmpty()){
-					this.results.put(++key, new ArrayList<String>());
-					continue;
-				}
+		ArrayList<String> fileLines = ContentLoader
+				.getAllLinesOptList(this.resultFile);
+		int key = 0;
+		HashMap<Integer, ArrayList<String>> tempMap = new HashMap<>();
+		for (int i = 0; i < fileLines.size(); i += 2) {
+			String resultAPI = fileLines.get(i + 1).trim();
+			if (resultAPI.isEmpty()) {
+				tempMap.put(++key, new ArrayList<>());
+			} else {
 				String[] apis = resultAPI.split("\\s+");
-				ArrayList<String> apilist = new ArrayList<>(Arrays.asList(apis));
-				this.results.put(++key, apilist);
+				ArrayList<String> apilist = new ArrayList<>();
+				for (String api : apis) {
+					apilist.add(api);
+				}
+				tempMap.put(++key, apilist);
 			}
-			scanner.close();
-
-			System.out.println("Avg. words per query:" + (double) qwordcount
-					/ this.results.size());
-
-		} catch (Exception exc) {
-			exc.printStackTrace();
 		}
+		return tempMap;
 	}
 
-	protected int isApiFoundK(ArrayList<String> rapis, ArrayList<String> gapis,
-			int K) {
+	protected int isApiFound_K(ArrayList<String> rapis,
+			ArrayList<String> gapis, int K) {
 		// check if correct API is found
 		K = rapis.size() < K ? rapis.size() : K;
 		int found = 0;
 		outer: for (int i = 0; i < K; i++) {
 			String api = rapis.get(i);
 			for (String gapi : gapis) {
-				// if (gapi.contains(api) || api.contains(gapi)) {
 				if (gapi.endsWith(api) || api.endsWith(gapi)) {
-				//if(gapi.equals(api)){
 					found = 1;
 					break outer;
 				}
@@ -96,8 +105,6 @@ public class ResultAnalyzer {
 		// check if the API can be found
 		for (String gapi : gapis) {
 			if (gapi.endsWith(api) || api.endsWith(gapi)) {
-				//if(gapi.equals(api)){
-				// if (gapi.contains(api) || api.contains(gapi)) {
 				return true;
 			}
 		}
@@ -110,9 +117,11 @@ public class ResultAnalyzer {
 		double rrank = 0;
 		for (int i = 0; i < K; i++) {
 			String api = rapis.get(i);
-			if (isApiFound(api, gapis)) {
-				rrank = 1 / (i + 1);
-				break;
+			if (strictMatching) {
+				if (isApiFound(api, gapis)) {
+					rrank = 1.0 / (i + 1);
+					break;
+				}
 			}
 		}
 		return rrank;
@@ -121,13 +130,15 @@ public class ResultAnalyzer {
 	protected double getPrecisionK(ArrayList<String> rapis,
 			ArrayList<String> gapis, int K) {
 		// getting precision at K
-		if(rapis.size()>0)
-		K = rapis.size() < K ? rapis.size() : K;
+		if (rapis.size() > 0)
+			K = rapis.size() < K ? rapis.size() : K;
 		double found = 0;
 		for (int index = 0; index < K; index++) {
 			String api = rapis.get(index);
-			if (isApiFound(api, gapis)) {
-				found++;
+			if (strictMatching) {
+				if (isApiFound(api, gapis)) {
+					found++;
+				}
 			}
 		}
 		return found / K;
@@ -140,9 +151,11 @@ public class ResultAnalyzer {
 		double found = 0;
 		for (int index = 0; index < K; index++) {
 			String api = rapis.get(index);
-			if (isApiFound(api, gapis)) {
-				found++;
-				linePrec += (found / (index + 1));
+			if (strictMatching) {
+				if (isApiFound(api, gapis)) {
+					found++;
+					linePrec += (found / (index + 1));
+				}
 			}
 		}
 		if (found == 0)
@@ -158,78 +171,67 @@ public class ResultAnalyzer {
 		double found = 0;
 		for (int index = 0; index < K; index++) {
 			String api = rapis.get(index);
-			if (isApiFound(api, gapis)) {
-				found++;
+			if (strictMatching) {
+				if (isApiFound(api, gapis)) {
+					found++;
+				}
 			}
 		}
 		return found / gapis.size();
 	}
 
-	protected void analyzeResults() {
+	public void analyzeResults() {
 		// analyze two results and compare performance
 		try {
-			int correct_sum = 0;
+			double correct_sum = 0;
 			double rrank_sum = 0;
 			double precision_sum = 0;
 			double preck_sum = 0;
 			double recall_sum = 0;
-			double fmeasure_sum = 0;
 
-			System.out.println("Results collected for:"+ this.results.keySet().size());
-
-			int noresult=0;
-			
 			for (int key : this.golddata.keySet()) {
 				try {
-					
 					ArrayList<String> rapis = this.results.get(key);
 					ArrayList<String> gapis = this.golddata.get(key);
 
-					if(rapis.isEmpty())noresult++;
+					if (rapis.isEmpty()) {
+						// System.err.println(key);
+					}
 
-					//System.out.println(key);
-					
-					correct_sum = correct_sum + isApiFoundK(rapis, gapis, K);
+					correct_sum = correct_sum + isApiFound_K(rapis, gapis, K);
+
 					rrank_sum = rrank_sum + getRRank(rapis, gapis, K);
+
 					double prec = 0;
 					prec = getPrecisionK(rapis, gapis, K);
 					precision_sum = precision_sum + prec;
+
 					double preck = 0;
 					preck = getAvgPrecisionK(rapis, gapis, K);
 					preck_sum = preck_sum + preck;
+
 					double recall = 0;
 					recall = getRecallK(rapis, gapis, K);
 					recall_sum = recall_sum + recall;
 
-					if (preck + recall > 0)
-						fmeasure_sum = fmeasure_sum
-								+ ((2 * preck * recall) / (preck + recall));
+					// storing the results
+					this.precisionMap.put(key, preck);
+					this.recallMap.put(key, recall);
+					this.rrankMap.put(key, getRRank(rapis, gapis, K));
+					this.accMap
+							.put(key, (double) isApiFound_K(rapis, gapis, K));
+
 				} catch (Exception exc) {
+					// handle the exception
 				}
 			}
 
-			
-			System.out.println("No results:"+noresult);
-			
-			// now showing the average results
-			System.out.println("Top-" + K + " accuracy: "
-					+ ((double) correct_sum / this.results.keySet().size())
-					* 100);
-
-			System.out.println("Mean Receiprocal Rank: " + rrank_sum
-					/ this.results.keySet().size());
-
-			System.out.println("Mean Precision: " + 100 * precision_sum
-					/ this.results.keySet().size());
-
-			System.out.println("Mean Precision @" + K + ": " + 100 * preck_sum
-					/ this.results.keySet().size());
-
-			System.out.println("Mean Recall: " + 100 * recall_sum
-					/ this.results.keySet().size());
-
-			System.out.println("Mean F-measure: " + 100 * fmeasure_sum
-					/ this.results.keySet().size());
+			// now showing the results
+			System.out.println("Top-" + K + " Accuracy: " + correct_sum
+					/ golddata.size());
+			System.out.println("MRR@" + K + ": " + rrank_sum / golddata.size());
+			System.out.println("MAP@" + K + ": " + preck_sum / golddata.size());
+			System.out.println("MR@" + K + ": " + recall_sum / golddata.size());
 
 		} catch (Exception exc) {
 			exc.printStackTrace();
@@ -237,8 +239,14 @@ public class ResultAnalyzer {
 	}
 
 	public static void main(String[] args) {
+		boolean strictMatching = true;
 		int K = 10;
-		ResultAnalyzer analyzer = new ResultAnalyzer(K);
+		String EXP_HOME = "C:/My MSc/ThesisWorks/Crowdsource_Knowledge_Base/CodeTokenRec/Replication-package/EMSE2018-Dataset";
+		String oracleFile = EXP_HOME + "/NL Queries & Oracle.txt";
+		String resultFile = EXP_HOME + "/RACK-Suggested-API-Classes.txt";
+
+		ResultAnalyzer analyzer = new ResultAnalyzer(oracleFile, resultFile, K,
+				strictMatching);
 		analyzer.analyzeResults();
 	}
 }

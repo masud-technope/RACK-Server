@@ -72,7 +72,7 @@ public class ExpDataCollector {
 					// String qline = convertAPI2String(usedQueryTokens);
 					this.results.add(query);
 					this.results.add(line);
-					this.results.add("");// blank line
+					//this.results.add("");// blank line
 					System.out.println("Done: Query #" + (++count));
 				} catch (Exception exc) {
 					System.err
@@ -95,7 +95,7 @@ public class ExpDataCollector {
 				fwriter.write(line + "\n");
 			}
 			fwriter.close();
-			System.out.println("Collected API names saved successfully!");
+			System.out.println("Collected API classes, and saved successfully!");
 		} catch (Exception exc) {
 			exc.printStackTrace();
 		}
