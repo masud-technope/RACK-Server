@@ -1,6 +1,7 @@
 package core;
 
 import java.util.ArrayList;
+
 import utility.ContentLoader;
 
 public class StopWordRemover {
@@ -15,6 +16,31 @@ public class StopWordRemover {
 				stopwords.add(line.trim());
 			}
 		}
+	}
+
+	public String getRefinedSentence(String sentence) {
+		// get refined sentence
+		String refined = new String();
+		String temp = removeSpecialChars(sentence);
+		String[] tokens = temp.split("\\s+");
+		for (String token : tokens) {
+			if (!stopwords.contains(token.toLowerCase())) {
+				refined += token + " ";
+			}
+		}
+		return refined.trim();
+	}
+
+	protected String removeSpecialChars(String sentence) {
+		// removing special characters
+		String regex = "\\p{Punct}+|\\d+|\\s+";
+		String[] parts = sentence.split(regex);
+		String refined = new String();
+		for (String str : parts) {
+			refined += str.trim() + " ";
+		}
+		// if(modifiedWord.isEmpty())modifiedWord=word;
+		return refined;
 	}
 
 	public static ArrayList<String> removeStopWords(String[] tokens) {
