@@ -2,6 +2,9 @@ package core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import config.StaticData;
+import code.search.evaluation.RACKPerformanceCalc;
 import experiment.ExpDataCollector;
 import experiment.ResultAnalyzer;
 
@@ -24,8 +27,7 @@ public class RACKRunner {
 			String queryFile = "./sample-queries.txt";
 			String query = "How to send email in Java?";
 			String resultFile = "./sample-output.txt";
-			String oracleFile = "./NL Queries & Oracle.txt";
-			String sourceIndexFolder = "./IJDS-code-ext-index";
+			String oracleFile = StaticData.ORACLE_FILE;
 
 			int TOPK = 10;
 
@@ -60,7 +62,8 @@ public class RACKRunner {
 						return;
 					}
 				} else {
-					System.err.println("Please enter your query file.");
+					System.err
+							.println("Please enter your query or a file containing the queries.");
 					return;
 				}
 				break;
@@ -78,8 +81,9 @@ public class RACKRunner {
 			case "evaluateCodeSearch":
 				if (keyMap.containsKey("-resultFile")) {
 					resultFile = keyMap.get("-resultFile");
-					
-					
+					RACKPerformanceCalc pcalc = new RACKPerformanceCalc(
+							resultFile, TOPK);
+					pcalc.getRACKPerformance();
 				} else {
 					System.err.println("Please enter the API result file.");
 					return;
@@ -88,12 +92,15 @@ public class RACKRunner {
 			case "evaluateQE":
 				if (keyMap.containsKey("-resultFile")) {
 					resultFile = keyMap.get("-resultFile");
+					RACKPerformanceCalc pcalc = new RACKPerformanceCalc(
+							resultFile);
+					pcalc.getRACKQEPerformance();
 				} else {
 					System.err.println("Please enter the API result file.");
 					return;
 				}
 				break;
-
+				
 			default:
 				break;
 			}

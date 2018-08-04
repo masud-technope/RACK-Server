@@ -43,16 +43,6 @@ public class LuceneSearcher {
 	public double maxScore = 0;
 	public double minScore = 100000;
 
-	public LuceneSearcher(String searchQuery, String repository) {
-		// initialization
-		// this.bugID = bugID;
-		this.repository = repository;
-		this.indexFolder = StaticData.EVA_HOME + "/lucene/index/" + repository;
-		this.searchQuery = searchQuery;
-		this.results = new ArrayList<>();
-		// this.goldset = new ArrayList<>();
-	}
-
 	public LuceneSearcher(int caseNo, String searchQuery, String indexFolder) {
 		this.searchQuery = searchQuery;
 		this.indexFolder = indexFolder;
@@ -80,19 +70,13 @@ public class LuceneSearcher {
 					// int docID=item.doc;
 					String fileURL = doc.get("path");
 					fileURL = fileURL.replace('\\', '/');
-					// System.out.println("Doc ID:"+docID);
-					// Terms terms=reader.getTermVector(docID, "contents");
-					// System.out.println(doc.get("contents"));
-
 					String APIName = new File(fileURL).getName().split("\\.")[0];
 					this.results.add(APIName);
 				}
-				// showing gold set
-				// showGoldSet();
-				// getGoldSet();
 			}
-		} catch (Exception e) {
+		} catch (Exception exc) {
 			// handle the exception
+			exc.printStackTrace();
 		}
 		return this.results;
 	}
@@ -117,16 +101,9 @@ public class LuceneSearcher {
 					// int docID=item.doc;
 					String fileURL = doc.get("path");
 					fileURL = fileURL.replace('\\', '/');
-					// System.out.println("Doc ID:"+docID);
-					// Terms terms=reader.getTermVector(docID, "contents");
-					// System.out.println(doc.get("contents"));
-
 					String APIName = new File(fileURL).getName().split("\\.")[0];
 					this.results.add(APIName);
 				}
-				// showing gold set
-				// showGoldSet();
-				// getGoldSet();
 			}
 		} catch (Exception e) {
 			// handle the exception
@@ -206,12 +183,6 @@ public class LuceneSearcher {
 	}
 
 	public static void main(String[] args) {
-		// int bugID = 41186;
-		String repository = "chcomment";
-		String searchQuery = "verify signature signed data";
-		LuceneSearcher searcher = new LuceneSearcher(searchQuery, repository);
-		int TOPK = 10;
-		ArrayList<String> results = searcher.performVSMSearch(TOPK);
-		System.out.println(results);
+		// empty main
 	}
 }

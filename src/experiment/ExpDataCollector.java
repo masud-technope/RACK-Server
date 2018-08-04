@@ -15,14 +15,6 @@ public class ExpDataCollector {
 	ArrayList<String> results;
 	int TOPK;
 
-	@Deprecated
-	public ExpDataCollector() {
-		// variable initialization
-		this.queryFile = StaticData.EVA_HOME + "/oracle-all-noun-verb.txt";
-		this.queries = new ArrayList<>();
-		this.results = new ArrayList<>();
-	}
-
 	public ExpDataCollector(String queryFile, int TOPK, String outFile) {
 		this.queryFile = queryFile;
 		this.outputFile = outFile;

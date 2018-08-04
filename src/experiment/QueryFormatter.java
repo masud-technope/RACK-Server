@@ -27,7 +27,7 @@ public class QueryFormatter {
 				+ "/oracle-all-noun-verb.txt";
 	}
 
-	protected String tagSingleQuery(String query) {
+	public String tagSingleQuery(String query) {
 		// tag a single query
 		String tagged = tagger.tagString(query);
 		String[] words = tagged.split("\\s+");

@@ -2,8 +2,10 @@ package text.normalizer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
 import core.StopWordRemover;
 import core.TokenStemmer;
+import stopwords.StopWordManager;
 import utility.MiscUtility;
 
 public class TextNormalizer {
@@ -12,6 +14,12 @@ public class TextNormalizer {
 
 	public TextNormalizer(String content) {
 		this.content = content;
+	}
+
+	public String normalizeSimple() {
+		String[] words = this.content.split("\\p{Punct}+|\\d+|\\s+");
+		ArrayList<String> wordList = new ArrayList<>(Arrays.asList(words));
+		return MiscUtility.list2Str(wordList);
 	}
 
 	public String normalizeSimpleCodeDiscardSmall() {
@@ -28,6 +36,26 @@ public class TextNormalizer {
 		StopWordRemover stopManager = new StopWordRemover();
 		this.content = stopManager.getRefinedSentence(modified);
 		return this.content;
+	}
+
+	public String normalizeSimpleCode() {
+		String[] words = this.content.split("\\p{Punct}+|\\d+|\\s+");
+		ArrayList<String> wordList = new ArrayList<>(Arrays.asList(words));
+		// extracting code only items
+		wordList = extractCodeItem(wordList);
+		String modifiedContent = MiscUtility.list2Str(wordList);
+		StopWordManager stopManager = new StopWordManager();
+		this.content = stopManager.getRefinedSentence(modifiedContent);
+		return this.content;
+	}
+
+	public String normalizeSimpleNonCode() {
+		String[] words = this.content.split("\\p{Punct}+|\\s+");
+		ArrayList<String> wordList = new ArrayList<>(Arrays.asList(words));
+		ArrayList<String> codeOnly = extractCodeItem(wordList);
+		// only non-code elements
+		wordList.removeAll(codeOnly);
+		return MiscUtility.list2Str(wordList);
 	}
 
 	protected ArrayList<String> discardSmallTokens(ArrayList<String> items) {
@@ -48,9 +76,28 @@ public class TextNormalizer {
 		// discard the small tokens
 		wordList = discardSmallTokens(wordList);
 		String modifiedContent = MiscUtility.list2Str(wordList);
-		StopWordRemover stopManager = new StopWordRemover();
+		StopWordManager stopManager = new StopWordManager();
 		this.content = stopManager.getRefinedSentence(modifiedContent);
 		return this.content;
+	}
+
+	public String normalizeText(ArrayList<String> wordList) {
+		// normalize the content
+		wordList = discardSmallTokens(wordList);
+		StopWordManager stopManager = new StopWordManager();
+		ArrayList<String> refined = stopManager.getRefinedList(wordList);
+		ArrayList<String> temp = TokenStemmer.performStemming(refined);
+		return MiscUtility.list2Str(temp);
+	}
+
+	public String normalizeTextLight() {
+		// normalize the content
+		String[] words = this.content.split("\\p{Punct}+|\\d+|\\s+");
+		ArrayList<String> wordList = new ArrayList<>(Arrays.asList(words));
+		// discard the small tokens
+		wordList = discardSmallTokens(wordList);
+		String modifiedContent = MiscUtility.list2Str(wordList);
+		return modifiedContent;
 	}
 
 	protected ArrayList<String> extractCodeItem(ArrayList<String> words) {
@@ -87,4 +134,5 @@ public class TextNormalizer {
 		}
 		return refined;
 	}
+
 }

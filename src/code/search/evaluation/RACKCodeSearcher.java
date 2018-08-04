@@ -1,6 +1,7 @@
 package code.search.evaluation;
 
 import java.util.HashMap;
+
 import lucenecheck.LuceneSearcher;
 
 public class RACKCodeSearcher {
@@ -9,14 +10,17 @@ public class RACKCodeSearcher {
 	String indexFolder;
 	int TOPK;
 
-	public RACKCodeSearcher(String resultFile, String indexFolder, int TOPK) {
-		this.queryMap = getSearchQueries();
+	public RACKCodeSearcher(HashMap<Integer, String> queryMap,
+			String indexFolder, int TOPK) {
+		this.queryMap = queryMap;
 		this.indexFolder = indexFolder;
 		this.TOPK = TOPK;
 	}
 
-	protected HashMap<Integer, String> getSearchQueries() {
-
+	public RACKCodeSearcher(HashMap<Integer, String> queryMap,
+			String indexFolder) {
+		this.queryMap = queryMap;
+		this.indexFolder = indexFolder;
 	}
 
 	protected double performRACKCodeSearch() {
@@ -72,6 +76,5 @@ public class RACKCodeSearcher {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
 	}
 }

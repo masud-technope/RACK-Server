@@ -55,6 +55,7 @@ public class ContentLoader {
 			bufferedReader.close();
 		} catch (Exception ex) {
 			// handle the exception
+			ex.printStackTrace();
 		}
 		return lines;
 	}
