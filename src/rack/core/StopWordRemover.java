@@ -1,17 +1,20 @@
-package core;
+package rack.core;
 
 import java.util.ArrayList;
-
-import utility.ContentLoader;
+import rack.config.StaticData;
+import rack.utility.ContentLoader;
 
 public class StopWordRemover {
 
 	static ArrayList<String> stopwords = new ArrayList<>();
+	
+	static String stopDir = StaticData.STOPWORD_DIR
+			+ "/stop-words-english-total.txt";
 
 	protected static void loadStopWords() {
 		// loading stop words
 		if (stopwords.isEmpty()) {
-			String[] lines = ContentLoader.getAllLines("./stopword/en.txt");
+			String[] lines = ContentLoader.getAllLines(stopDir);
 			for (String line : lines) {
 				stopwords.add(line.trim());
 			}

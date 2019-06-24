@@ -1,4 +1,4 @@
-package core;
+package rack.core;
 
 import java.util.ArrayList;
 import snowballstemmer.EnglishStemmer;

@@ -11,9 +11,9 @@ public class StopWordManager {
 
 	public ArrayList<String> stopList;
 	String stopDir = StaticData.STOPWORD_DIR
-			+ "/stopword/stop-words-english-total.txt";
+			+ "/stop-words-english-total.txt";
 	String javaKeywordFile = StaticData.STOPWORD_DIR
-			+ "/stopword/java-keywords.txt";;
+			+ "/java-keywords.txt";;
 	String CppKeywordFile = StaticData.STOPWORD_DIR + "/cpp-keywords.txt";
 
 	public StopWordManager() {

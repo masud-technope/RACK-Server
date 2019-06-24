@@ -1,8 +1,8 @@
-package core;
+package rack.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import similarity.CosineSimilarityMeasure;
+import rack.similarity.CosineSimilarityMeasure;
 
 public class LexicalSimilarityProvider {
 

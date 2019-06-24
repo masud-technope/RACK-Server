@@ -1,4 +1,4 @@
-package core;
+package rack.core;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import config.StaticData;
-import dbaccess.ConnectionManager;
+import rack.config.StaticData;
+import rack.dbaccess.ConnectionManager;
 
 public class CoocurrenceScoreProvider {
 

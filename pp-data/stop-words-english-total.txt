@@ -6,6 +6,7 @@
 \
 'll
 've
+a
 a's
 able
 about
@@ -279,6 +280,7 @@ how's
 howbeit
 however
 hundred
+i
 i'd
 i'll
 i'm
@@ -794,4 +796,3 @@ zero
 ﻿I
 ﻿a
 ﻿able
-do
