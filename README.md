@@ -1,6 +1,7 @@
 # RACK: Automatic Query Reformulation for Code Search using Crowdsourced Knowledge
 
-Source code of RACK
+Source code of RACK. Detailed replication package is [**here**](https://github.com/masud-technope/RACK-Replication-Package)
+
 
 Accepted Papers (3)
 -----------------------------------------
