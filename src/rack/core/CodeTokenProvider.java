@@ -482,7 +482,7 @@ public class CodeTokenProvider {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String query = "How to send email in Java?";
+		String query = "How to parse HTML in Java?";
 		CodeTokenProvider provider = new CodeTokenProvider(query);
 		ArrayList<APIToken> results = provider.recommendRelevantAPIs("all");
 		for (APIToken atoken : results) {
