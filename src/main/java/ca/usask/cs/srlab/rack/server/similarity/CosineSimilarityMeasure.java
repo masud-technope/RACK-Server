@@ -10,51 +10,49 @@ import java.util.StringTokenizer;
 
 public class CosineSimilarityMeasure {
 
-	// titles
+
 	String title1 = new String();
 	String title2 = new String();
 	double cosine_measure = 0;
 
-	// Hash sets
+
 	Set<String> set1;
 	Set<String> set2;
 
-	// Array Lists
+
 	ArrayList<String> list1;
 	ArrayList<String> list2;
 
-	// Hash Maps
+
 	HashMap<String, Integer> map1;
 	HashMap<String, Integer> map2;
 
 	public CosineSimilarityMeasure(String title1, String title2) {
-		// assigning two parties
 		this.title1 = title1;
 		this.title2 = title2;
-		// instantiating sets
+
 		set1 = new HashSet<String>();
 		set2 = new HashSet<String>();
-		// instantiating the Hash maps
+
 		map1 = new HashMap<String, Integer>();
 		map2 = new HashMap<String, Integer>();
 	}
 
 	public CosineSimilarityMeasure(ArrayList<String> list1,
 			ArrayList<String> list2) {
-		// getting cosine similarity measure
+
 		this.list1 = list1;
 		this.list2 = list2;
-		// instantiating sets
+
 		set1 = new HashSet<String>();
 		set2 = new HashSet<String>();
-		// instantiating the Hash maps
+
 		map1 = new HashMap<String, Integer>();
 		map2 = new HashMap<String, Integer>();
 	}
 
 	@Deprecated
 	protected ArrayList<String> getTokenized_text_content(String content) {
-		// code for creating tokens
 		ArrayList<String> tokens = new ArrayList<String>();
 		StringTokenizer tokenizer = new StringTokenizer(content);
 		while (tokenizer.hasMoreTokens()) {
@@ -63,7 +61,7 @@ public class CosineSimilarityMeasure {
 				tokens.add(token);
 			}
 		}
-		// returning tokens
+
 		return tokens;
 	}
 
@@ -71,7 +69,6 @@ public class CosineSimilarityMeasure {
 			String content) {
 		MyTokenizer myTokenizer = new MyTokenizer(content);
 		ArrayList<String> tokens = myTokenizer.tokenize_code_item();
-		// discarding the insignificant tokens such as punctuation marks
 		return myTokenizer.refine_insignificant_tokens(tokens);
 	}
 
@@ -107,7 +104,6 @@ public class CosineSimilarityMeasure {
 			}
 		}
 
-		// converting to Hash Map
 		HashSet<String> hset1 = new HashSet<String>(set1);
 		HashSet<String> hset2 = new HashSet<String>(set2);
 
@@ -143,20 +139,19 @@ public class CosineSimilarityMeasure {
 		} catch (Exception exc) {
 			cosine_ratio = 0;
 		}
-		// System.out.println(cosine_ratio);
+
 		this.cosine_measure = cosine_ratio;
 
 	} catch (Exception exc) {
-		// exc.printStackTrace();
+		exc.printStackTrace();
 	}
-	// returning cosine ration
+
 	return cosine_measure;
 
 	}
 	
 	
 	public double get_cosine_similarity_score(boolean granularized) {
-		// code for getting the cosine similarity score
 		try {
 			if (title1.isEmpty() || title1 == null)
 				return 0;
@@ -170,11 +165,11 @@ public class CosineSimilarityMeasure {
 					.getTokenized_text_content_granularized(title2) : this
 					.getTokenized_text_content(title2);
 
-			// Stemmer my_stemmer=new Stemmer();
+
 
 			for (String str : parts1) {
 
-				// str=my_stemmer.stripAffixes(str);
+
 				if (!str.isEmpty()) {
 					set1.add(str);
 					if (!map1.containsKey(str))
@@ -188,7 +183,6 @@ public class CosineSimilarityMeasure {
 			}
 
 			for (String str : parts2) {
-				// str=my_stemmer.stripAffixes(str);
 				if (!str.isEmpty()) {
 					set2.add(str);
 					if (!map2.containsKey(str))
@@ -201,12 +195,6 @@ public class CosineSimilarityMeasure {
 				}
 			}
 
-			// show extracted tokens
-			// show_extracted_tokens(set1);
-			// System.out.println();
-			// show_extracted_tokens(set2);
-
-			// converting to Hash Map
 			HashSet<String> hset1 = new HashSet<String>(set1);
 			HashSet<String> hset2 = new HashSet<String>(set2);
 
@@ -226,7 +214,6 @@ public class CosineSimilarityMeasure {
 				sqr2 += val * val;
 			}
 
-			// now calculate the similarity
 			double top_part = 0;
 			for (int i = 0; i < hset1.size(); i++) {
 				String key = (String) set1.toArray()[i];
@@ -242,25 +229,23 @@ public class CosineSimilarityMeasure {
 			} catch (Exception exc) {
 				cosine_ratio = 0;
 			}
-			// System.out.println(cosine_ratio);
+
 			this.cosine_measure = cosine_ratio;
 
 		} catch (Exception exc) {
 			// exc.printStackTrace();
 		}
-		// returning cosine ration
+
 		return cosine_measure;
 	}
 
 	protected void show_extracted_tokens(Set s) {
-		// code for showing extracted tokens
 		for (int i = 0; i < s.size(); i++) {
 			System.out.print(s.toArray()[i] + "\t");
 		}
 	}
 
 	protected static String load_text_content(String fileName) {
-		// code for loading content
 		String content = new String();
 		try {
 			Scanner scanner = new Scanner(new File("./testdata/" + fileName));

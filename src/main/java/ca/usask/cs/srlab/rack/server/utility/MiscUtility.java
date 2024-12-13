@@ -34,13 +34,12 @@ public class MiscUtility {
 	}
 	
 	public static ArrayList<String> decomposeCamelCase(String token) {
-		// decomposing camel case tokens using regex
 		ArrayList<String> refined = new ArrayList<>();
 		String camRegex = "([a-z])([A-Z]+)";
 		String replacement = "$1\t$2";
 		String filtered = token.replaceAll(camRegex, replacement);
-		String[] ftokens = filtered.split("\\s+");
-		refined.addAll(Arrays.asList(ftokens));
+		String[] filteredTokens = filtered.split("\\s+");
+		refined.addAll(Arrays.asList(filteredTokens));
 		return refined;
 	}
 
@@ -56,33 +55,32 @@ public class MiscUtility {
 		return array;
 	}
 
-	public static HashMap<String, Integer> wordcount(String content) {
+	public static HashMap<String, Integer> wordCount(String content) {
 		// performing simple word count
 		String[] words = content.split("\\s+");
-		HashMap<String, Integer> countmap = new HashMap<>();
+		HashMap<String, Integer> countMap = new HashMap<>();
 		for (String word : words) {
-			if (countmap.containsKey(word)) {
-				int count = countmap.get(word) + 1;
-				countmap.put(word, count);
+			if (countMap.containsKey(word)) {
+				int count = countMap.get(word) + 1;
+				countMap.put(word, count);
 			} else {
-				countmap.put(word, 1);
+				countMap.put(word, 1);
 			}
 		}
-		return countmap;
+		return countMap;
 	}
 
-	public static HashMap<String, Integer> wordcount(ArrayList<String> words) {
-		// performing simple word count
-		HashMap<String, Integer> countmap = new HashMap<>();
+	public static HashMap<String, Integer> wordCount(ArrayList<String> words) {
+		HashMap<String, Integer> countMap = new HashMap<>();
 		for (String word : words) {
-			if (countmap.containsKey(word)) {
-				int count = countmap.get(word) + 1;
-				countmap.put(word, count);
+			if (countMap.containsKey(word)) {
+				int count = countMap.get(word) + 1;
+				countMap.put(word, count);
 			} else {
-				countmap.put(word, 1);
+				countMap.put(word, 1);
 			}
 		}
-		return countmap;
+		return countMap;
 	}
 
 	public static double[] list2Arr(ArrayList<Double> list) {
@@ -92,5 +90,4 @@ public class MiscUtility {
 		}
 		return temp;
 	}
-
 }

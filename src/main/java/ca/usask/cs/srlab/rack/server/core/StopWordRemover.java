@@ -12,7 +12,6 @@ public class StopWordRemover {
 			+ "/stop-words-english-total.txt";
 
 	protected static void loadStopWords() {
-		// loading stop words
 		if (stopwords.isEmpty()) {
 			String[] lines = ContentLoader.getAllLines(stopDir);
 			for (String line : lines) {
@@ -22,7 +21,6 @@ public class StopWordRemover {
 	}
 
 	public String getRefinedSentence(String sentence) {
-		// get refined sentence
 		String refined = new String();
 		String temp = removeSpecialChars(sentence);
 		String[] tokens = temp.split("\\s+");
@@ -35,21 +33,17 @@ public class StopWordRemover {
 	}
 
 	protected String removeSpecialChars(String sentence) {
-		// removing special characters
 		String regex = "\\p{Punct}+|\\d+|\\s+";
 		String[] parts = sentence.split(regex);
 		String refined = new String();
 		for (String str : parts) {
 			refined += str.trim() + " ";
 		}
-		// if(modifiedWord.isEmpty())modifiedWord=word;
 		return refined;
 	}
 
 	public static ArrayList<String> removeStopWords(String[] tokens) {
-		// loading stop words
 		loadStopWords();
-		// now remove the stop words
 		ArrayList<String> refined = new ArrayList<>();
 		for (String token : tokens) {
 			if (stopwords.contains(token.toLowerCase())) {
@@ -58,7 +52,6 @@ public class StopWordRemover {
 				refined.add(token);
 			}
 		}
-		// returning refined token list
 		return refined;
 	}
 }

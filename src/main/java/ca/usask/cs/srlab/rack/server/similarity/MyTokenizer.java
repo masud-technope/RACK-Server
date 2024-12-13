@@ -14,7 +14,6 @@ public class MyTokenizer {
 	}
 
 	public ArrayList<String> tokenize_text_item() {
-		// tokenizing textual content
 		StringTokenizer tokenizer = new StringTokenizer(this.itemToTokenize);
 		ArrayList<String> tokens = new ArrayList<String>();
 		while (tokenizer.hasMoreTokens()) {
@@ -30,9 +29,6 @@ public class MyTokenizer {
 	}
 
 	public ArrayList<String> tokenize_code_item() {
-		// code for tokenization of code elements
-		//String tcode = format_the_code(this.itemToTokenize);
-		//String fcode = remove_code_comment(tcode);
 		StringTokenizer tokenizer = new StringTokenizer(this.itemToTokenize);
 		ArrayList<String> tokens = new ArrayList<String>();
 		while (tokenizer.hasMoreTokens()) {
@@ -48,7 +44,6 @@ public class MyTokenizer {
 	
 	public ArrayList<String> refine_insignificant_tokens(
 			ArrayList<String> codeTokens) {
-		// code for refining the insignificant tokens of length 1
 		try {
 			for (String token : codeTokens) {
 				if (token.trim().length() == 1) {
@@ -56,7 +51,7 @@ public class MyTokenizer {
 				}
 			}
 		} catch (Exception exc) {
-			// handle the exception
+
 		}
 		return codeTokens;
 	}

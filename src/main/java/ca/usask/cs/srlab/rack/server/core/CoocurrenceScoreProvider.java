@@ -66,12 +66,10 @@ public class CoocurrenceScoreProvider {
 						temp.add(results.getString("Token"));
 					}
 
-					// now store it to Hash map
 					this.coocAPIMap.put(keypair, temp);
 				}
 			}
 		} catch (Exception exc) {
-			// handle the exception
 			exc.printStackTrace();
 		}
 	}
