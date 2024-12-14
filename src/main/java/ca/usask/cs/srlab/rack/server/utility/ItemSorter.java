@@ -14,7 +14,7 @@ public class ItemSorter {
             HashMap<String, Integer> wordMap) {
         List<Map.Entry<String, Integer>> list = new LinkedList<>(
                 wordMap.entrySet());
-        Collections.sort(list, new Comparator<Map.Entry<String, Integer>>() {
+        list.sort(new Comparator<Entry<String, Integer>>() {
             @Override
             public int compare(Entry<String, Integer> o1,
                                Entry<String, Integer> o2) {
@@ -31,7 +31,7 @@ public class ItemSorter {
             HashMap<String, Double> wordMap) {
         List<Map.Entry<String, Double>> list = new LinkedList<>(
                 wordMap.entrySet());
-        Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {
+        list.sort(new Comparator<Entry<String, Double>>() {
             @Override
             public int compare(Entry<String, Double> o1,
                                Entry<String, Double> o2) {

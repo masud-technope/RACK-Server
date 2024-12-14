@@ -54,7 +54,7 @@ public class StopWordManager {
     public String removeTinyTerms(String sentence) {
         String regex = "\\p{Punct}+|\\d+|\\s+";
         String[] parts = sentence.split(regex);
-        String refined = new String();
+        String refined = "";
         for (String str : parts) {
             if (str.length() >= 3)
                 refined += str.trim() + " ";
@@ -63,7 +63,7 @@ public class StopWordManager {
     }
 
     public String getRefinedSentence(String sentence) {
-        String refined = new String();
+        String refined = "";
         String temp = removeSpecialChars(sentence);
         String[] tokens = temp.split("\\s+");
         for (String token : tokens) {

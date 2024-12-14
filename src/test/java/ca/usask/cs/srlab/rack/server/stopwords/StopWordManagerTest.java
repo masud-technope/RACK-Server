@@ -14,7 +14,7 @@ public class StopWordManagerTest {
     @Test
     public void testGetRefinedSentence(){
         String sentence="Overall, the revised version satisfactorily addresses most of my initial concerns. I understand that the authors had to remove certain parts";
-        System.out.println(manager.getRefinedSentence(sentence));
+        System.out.println(this.manager.getRefinedSentence(sentence));
     }
 
 }
