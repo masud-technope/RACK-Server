@@ -19,7 +19,6 @@ public class ItemSorter {
             public int compare(Entry<String, Integer> o1,
                                Entry<String, Integer> o2) {
 
-
                 Integer v2 = o2.getValue();
                 Integer v1 = o1.getValue();
                 return v2.compareTo(v1);
@@ -37,7 +36,6 @@ public class ItemSorter {
             public int compare(Entry<String, Double> o1,
                                Entry<String, Double> o2) {
 
-                // TODO Auto-generated method stub
                 Double v2 = o2.getValue();
                 Double v1 = o1.getValue();
                 return v2.compareTo(v1);
