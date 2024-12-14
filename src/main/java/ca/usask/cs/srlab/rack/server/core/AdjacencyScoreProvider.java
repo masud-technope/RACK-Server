@@ -1,26 +1,24 @@
 package ca.usask.cs.srlab.rack.server.core;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import ca.usask.cs.srlab.rack.server.similarity.CosineSimilarityMeasure;
-import ca.usask.cs.srlab.rack.server.config.StaticData;
 import ca.usask.cs.srlab.rack.server.dbaccess.ConnectionManager;
 
 public class AdjacencyScoreProvider {
 
     ArrayList<String> queryTerms;
-    HashMap<String, ArrayList<String>> adjacencymap;
+    HashMap<String, ArrayList<String>> adjacencyMap;
     public ArrayList<String> keys;
-    double[][] simscores;
+    double[][] simScores;
 
     public AdjacencyScoreProvider(ArrayList<String> queryTerms) {
         this.queryTerms = queryTerms;
-        this.adjacencymap = new HashMap<>();
+        this.adjacencyMap = new HashMap<>();
         this.keys = new ArrayList<>();
     }
 
@@ -39,7 +37,7 @@ public class AdjacencyScoreProvider {
                         String token = results.getString("Token");
                         adjacent.add(token);
                     }
-                    this.adjacencymap.put(key, adjacent);
+                    this.adjacencyMap.put(key, adjacent);
                 }
             }
         } catch (Exception exc) {
@@ -48,21 +46,21 @@ public class AdjacencyScoreProvider {
     }
 
     public double[][] collectAdjacencyScores() {
-        int dimension = adjacencymap.keySet().size();
-        this.keys.addAll(adjacencymap.keySet());
-        simscores = new double[dimension][dimension];
+        int dimension = adjacencyMap.keySet().size();
+        this.keys.addAll(adjacencyMap.keySet());
+        simScores = new double[dimension][dimension];
         for (int i = 0; i < dimension; i++) {
             String first = keys.get(i);
             for (int j = i + 1; j < dimension; j++) {
                 String second = keys.get(j);
                 CosineSimilarityMeasure cos = new CosineSimilarityMeasure(
-                        adjacencymap.get(first), adjacencymap.get(second));
-                double simscore = cos.getCosineSimilarityScore();
-                simscores[i][j] = simscore;
-                showScores(keys.get(i), keys.get(j), simscore);
+                        adjacencyMap.get(first), adjacencyMap.get(second));
+                double simScore = cos.getCosineSimilarityScore();
+                simScores[i][j] = simScore;
+                showScores(keys.get(i), keys.get(j), simScore);
             }
         }
-        return simscores;
+        return simScores;
     }
 
     public double[][] getQueryTermAdjacencyScores() {

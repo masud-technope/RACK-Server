@@ -21,6 +21,6 @@ public class RelevantAPICollectorTest {
     @Test
     public void testCollectAPIForQuery(){
         RelevantAPICollector collector=new RelevantAPICollector(queryTerms);
-        System.out.println(collector.collectAPIsforQuery());
+        System.out.println(collector.collectAPIsForQuery());
     }
 }
