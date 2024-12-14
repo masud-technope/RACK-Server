@@ -7,7 +7,7 @@ import java.util.HashMap;
 public class MiscUtility {
 
 	public static String list2Str(ArrayList<String> list) {
-		String temp = new String();
+		String temp = "";
 		for (String item : list) {
 			temp += item + " ";
 		}
@@ -15,7 +15,7 @@ public class MiscUtility {
 	}
 	
 	public static String list2Str(String[] list) {
-		String temp = new String();
+		String temp = "";
 		for (String item : list) {
 			temp += item + " ";
 		}
