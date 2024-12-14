@@ -65,11 +65,11 @@ public class CosineSimilarityMeasure {
         return tokens;
     }
 
-    protected ArrayList<String> getTokenized_text_content_granularized(
+    protected ArrayList<String> getTokenizedTextContentGranularized(
             String content) {
         MyTokenizer myTokenizer = new MyTokenizer(content);
-        ArrayList<String> tokens = myTokenizer.tokenize_code_item();
-        return myTokenizer.refine_insignificant_tokens(tokens);
+        ArrayList<String> tokens = myTokenizer.tokenizeCodeItem();
+        return myTokenizer.refineInsignificantTokens(tokens);
     }
 
 
@@ -158,10 +158,10 @@ public class CosineSimilarityMeasure {
                 return 0;
 
             ArrayList<String> parts1 = granularized == true ? this
-                    .getTokenized_text_content_granularized(title1) : this
+                    .getTokenizedTextContentGranularized(title1) : this
                     .getTokenizedTextContent(title1);
             ArrayList<String> parts2 = granularized == true ? this
-                    .getTokenized_text_content_granularized(title2) : this
+                    .getTokenizedTextContentGranularized(title2) : this
                     .getTokenizedTextContent(title2);
 
 

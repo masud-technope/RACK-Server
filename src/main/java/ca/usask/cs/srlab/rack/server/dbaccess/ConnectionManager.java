@@ -8,29 +8,22 @@ import ca.usask.cs.srlab.rack.server.config.StaticData;
 
 public class ConnectionManager {
 
-	public static Connection conn = null;
+    public static Connection conn = null;
 
-	public static Connection getConnection() {
-		try {
-			if (conn == null) {
-				/*********** SQL Server connection **************/
-				// Class.forName(StaticData.Driver_name).newInstance();
-				// conn =
-				// DriverManager.getConnection(StaticData.connectionString);
 
-				/*********** SQLite connection ******************/
-				conn = DriverManager.getConnection(StaticData.connectionString);
-			}
-		} catch (Exception exc) {
-			// handle the exception
-			exc.printStackTrace();
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return conn;
-	}
+    public static Connection getConnection() {
+        try {
+            if (conn == null) {
+                conn = DriverManager.getConnection(StaticData.connectionString);
+            }
+        } catch (Exception exc) {
+            exc.printStackTrace();
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return conn;
+    }
 }
